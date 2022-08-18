@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset=utf-8>
+	<title>Car Simulator</title>
+	<link rel="stylesheet" type="text/css" href="./Car-Module/css/materialize.min.css">
+	<link rel="stylesheet" type="text/css" href="./Car-Module/css/index.css">
+</head>
+
+<body>
+	<div id="preloader" class="preloader-wrapper big active">
+		<div class="spinner-layer spinner-blue-only">
+			<div class="circle-clipper left">
+				<div class="circle"></div>
+			</div>
+			<div class="gap-patch">
+				<div class="circle"></div>
+			</div>
+			<div class="circle-clipper right">
+				<div class="circle"></div>
+			</div>
+		</div>
+	</div>
+	<div class="status">
+		<p>Position: (<span id="x">0.0000</span>, <span id="y">0.0000</span>)</p>
+		<p>Car Horizontal Axis Angle: <span id="angleCar">90.0</span></p>
+		<p>Sensor Center Distance: <span id="distanceCenter">22.0000</span></p>
+		<p>Sensor Right Distance: <span id="distanceRight">8.4853</span></p>
+		<p>Sensor Left Distance: <span id="distanceLeft">8.4853</span></p>
+		<p>Loss Rate: <span id="lossRate">Null</span></p>
+	</div>
+	<div class="control">
+		<div class="row">
+			<button id="startMotion" class="waves-effect waves-light btn" onclick="startMotion()">Start Motion (Space / M)</button>
+			<button id="reset" class="waves-effect waves-light btn" onclick="reset()">Reset (R)</button>
+		</div>
+		<div class="row" style="line-height:45px">
+			<div class="col s2">Camera</div>
+			<div class="col s4">
+				<input id="firstPerson" type="radio" name="camera" oninput="updateCamera()" onchange="updateCamera()">
+				<label for="firstPerson">First Person (1)</label>
+			</div>
+			<div class="col s4">
+				<input id="thirdPerson" type="radio" name="camera" checked="checked" oninput="updateCamera()" onchange="updateCamera()">
+				<label for="thirdPerson">Third Person (3)</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="input-field col s10">
+				<select id="map" onchange="updateMap(this.value)">
+						<option value="map1" selected>Track 1</option>
+						<option value="map2">Track 2</option>
+						<option value="map3">Track 3</option>
+				</select>
+				<label>Map (Not yet finished)</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col s12">Steering Wheel Angle (A/D) : <span id="angleWheel">0.0</span></div>
+			<p class="range-field">
+				<input id="angleWheelRange" type="range" min="-40.0" max="40.0" value="0.0" step="0.1" oninput="updateAngleWheel()" onchange="updateAngleWheel()">
+			</p>
+		</div>
+		<div class="row">
+			<div class="col s12">Speed : <span id="speed">100</span></div>
+			<p class="range-field">
+				<input id="speedRange" type="range" min="1" max="300" value="100" oninput="updateSpeed()" onchange="updateSpeed()">
+			</p>
+		</div>
+		<div class="row">
+			<div class="col s5">Fuzzy Control System</div>
+			<button id="fuzzyStart" class="waves-effect waves-light btn" onclick="fuzzyStart()">Start (F)</button>
+		</div>
+		<div class="row">
+			<ul class="collapsible" data-collapsible="accordion">
+				<li>
+					<div class="collapsible-header"><i class="material-icons"></i>Genetic Algorithm</div>
+					<div class="collapsible-body">
+						<div class="row">
+							<div class="col s12">
+								<button id="geneticTrain" class="waves-effect waves-light btn" onclick="geneticTrain()">Train</button>
+								<button id="geneticStart" class="waves-effect waves-light btn" onclick="geneticStart()" disabled="disabled">Start (G)</button>
+							</div>
+						</div>
+						<div class="row">
+							<div class="input-field col s4">
+								<input id="size" type="text" value="512" oninput="updateSize(this.value)" />
+								<label class="active" for="size">Size</label>
+							</div>
+							<div class="input-field col s4">
+								<input id="matingRate" type="text" value="0.5" oninput="updateMatingRate(this.value)" />
+								<label class="active" for="matingRate">GA Mating Rate</label>
+							</div>
+							<div class="input-field col s4">
+								<input id="mutationRate" type="text" value="0.5" oninput="updateMutationRate(this.value)" />
+								<label class="active" for="mutationRate">GA Mutation Rate</label>
+							</div>
+						</div>
+					</div>
+				</li>
+				<li>
+					<div class="collapsible-header"><i class="material-icons"></i>Particle Swarm Optimization</div>
+					<div class="collapsible-body">
+						<div class="row">
+							<div class="col s12">
+								<button id="psoTrain" class="waves-effect waves-light btn" onclick="psoTrain()">Train</button>
+								<button id="psoStart" class="waves-effect waves-light btn" onclick="psoStart()" disabled="disabled">Start (P)</button>
+							</div>
+						</div>
+						<div class="row">
+							<div class="input-field col s4">
+								<input id="maxVelocity" type="text" value="40" oninput="updateMaxVelocity(this.value)" />
+								<label class="active" for="maxVelocity">PSO Max Velocity</label>
+							</div>
+							<div class="input-field col s4">
+								<input id="cognition" type="text" value="0.3" oninput="updateCognition(this.value)" />
+								<label class="active" for="cognition">PSO Cognition</label>
+							</div>
+							<div class="input-field col s4">
+								<input id="social" type="text" value="0.3" oninput="updateSocial(this.value)" />
+								<label class="active" for="social">PSO Social</label>
+							</div>
+						</div>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<div class="row">
+			<div class="input-field col s6">
+				<select id="geneticDataset" onchange="updateDataset(this.value)">
+					<optgroup label="4D Datasets">
+						<option value="dataset-4D/train_1.txt">4D-data-1</option>
+						<option value="dataset-4D/train_3.txt">4D-data-2</option>
+						<option value="dataset-4D/train_5.txt">4D-data-3</option>
+					</optgroup>
+					<optgroup label="6D Datasets">
+						<option value="dataset-6D/train_5.txt" selected>6D-data-1</option>
+						<option value="dataset-6D/train_3.txt">6D-data-2</option>
+						<option value="dataset-6D/train_1.txt">6D-data-3</option>
+					</optgroup>
+				</select>
+				<label>Dataset</label>
+			</div>
+			<div class="input-field col s3">
+				<input id="maxIterations" type="text" value="500" oninput="updateMaxIterations(this.value)" />
+				<label class="active" for="maxIterations">Max Iterations</label>
+			</div>
+			<div class="input-field col s3">
+				<input id="numberOfNeurons" type="text" value="3" oninput="updateNumberOfNeurons(this.value)" />
+				<label class="active" for="numberOfNeurons">Neurons</label>
+			</div>
+		</div>
+		<div class="row">
+			<textarea id="data4D" style="display:none"></textarea>
+			<textarea id="data6D" style="display:none"></textarea>
+			<button id="saveFile4D" class="waves-effect waves-light btn" onclick="saveFile4D()">Save the track (4D)</button>
+			<button id="saveFile6D" class="waves-effect waves-light btn" onclick="saveFile6D()">Save the track (6D)</button>
+		</div>
+	</div>
+	<div class="result">
+		<p id="success" style="display:none">Success!!</p>
+		<p id="failure" style="display:none">Failure...</p>
+	</div>
+	<div class="instructions">
+		<a class="waves-effect waves-light btn" href="#instructions">Instructions</a>
+	</div>
+	<div id="instructions" class="modal">
+		<div class="modal-content">
+			<h4>Instructions</h4>
+			<p>Use the mouse to control the camera</p>
+			<p>Press Space/G to start motion</p>
+			<p>Press R to reset</p>
+			<p>Press A/D to control the steering wheel</p>
+			<p>Press ↑/↓/←/→ to adjust the position</p>
+			<p>Press 1/3 to switch camera</p>
+			<p>Press F to start fuzzy control system</p>
+			<p>Press G to start genetic algorithm</p>
+			<p>Press P to start particle swarm optimization</p>
+		</div>
+		<div class="modal-footer">
+			<a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat">OK</a>
+		</div>
+	</div>
+	<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+	<script src="./Car-Module/js/lib/three.min.js"></script>
+	<script src="./Car-Module/js/lib/Detector.js"></script>
+	<script src="./Car-Module/js/lib/OrbitControls.js"></script>
+	<script src="./Car-Module/js/lib/FileSaver.min.js"></script>
+	<script src="./Car-Module/js/lib/materialize.min.js"></script>
+	<script>
+		$(document).ready(function () {
+			$('select').material_select();
+			$('.collapsible').collapsible();
+			$('.modal').modal();
+		});
+	</script>
+	<script src="./Fuzzy-Control-System/js/fuzzy.js"></script>
+	<script src="./Genetic-Algorithm/js/RBF.js"></script>
+	<script src="./Genetic-Algorithm/js/gene.js"></script>
+	<script src="./Genetic-Algorithm/js/algorithm.js"></script>
+	<script src="./Particle-Swarm-Optimization/js/particle.js"></script>
+	<script src="./Particle-Swarm-Optimization/js/swarm.js"></script>
+	<script src="./Car-Module/js/scene.js"></script>
+	<script src="./Car-Module/js/sensor.js"></script>
+	<script src="./Car-Module/js/car.js"></script>
+	<script src="./Car-Module/js/download.js"></script>
+</body>
+
+</html>
